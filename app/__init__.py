@@ -1,6 +1,8 @@
 import os
+from flask_restx import Api, Namespace
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+
 
 db = SQLAlchemy()
 
@@ -19,7 +21,7 @@ def create_app():
 
     db.init_app(app)
 
-    from app.controllers.user_controller import user_bp
+    from app.controllers.user_controller import user_bp, user_ns
     app.register_blueprint(user_bp)
 
     return app

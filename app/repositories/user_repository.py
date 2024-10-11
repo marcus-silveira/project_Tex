@@ -1,11 +1,11 @@
-from app.models.user_model import User
+from app.entities.user_model import User
 from app import db
 
 
 class UserRepository:
     @staticmethod
-    def get_all():
-        return User.query.all()
+    def get_all(limit: int = 15):
+        return User.query.limit(limit).all()
 
     @staticmethod
     def get_by_id(user_id):
@@ -13,16 +13,28 @@ class UserRepository:
 
     @staticmethod
     def create(user):
-        db.session.add(user)
-        db.session.commit()
-        return user
+        try:
+            db.session.add(user)
+            db.session.commit()
+            return user
+        except Exception as e:
+            db.session.rollback()
+            raise e
 
     @staticmethod
     def update(user):
-        db.session.commit()
-        return user
+        try:
+            db.session.commit()
+            return user
+        except Exception as e:
+            db.session.rollback()
+            raise e
 
     @staticmethod
     def delete(user):
-        db.session.delete(user)
-        db.session.commit()
+        try:
+            db.session.delete(user)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            raise e
