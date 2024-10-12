@@ -6,20 +6,23 @@ from app.services.user_service import UserService
 from app.models.response import Response
 from sqlalchemy.exc import IntegrityError
 
-user_bp = Blueprint('user_bp', __name__, url_prefix='/api/v1/users')
+user_bp = Blueprint('user_bp', __name__, url_prefix='/api/v1')
 api = Api(user_bp, version='1.0', title='User API', description='API de usuários', doc='/swagger')
+
 user_ns = Namespace('users', description='Operações relacionadas a usuários')
 api.add_namespace(user_ns)
 
+
 user_model = define_user_model(api)
 response_model = define_response_model(api)
+
 
 @user_ns.route("/")
 class UserListResource(Resource):
     
     @api.doc('Retorna todos os usuários')
     @api.param('limit', 'Número de usuários a serem retornados')
-    @api.marshal_with(response_model, code=200, description="Usuários encontrados")
+    @api.marshal_with(response_model, code=200, description="Usuários encontrados", mask=False)
     @api.response(404, 'Não existem usuários cadastrados')
     @api.response(500, 'Erro ao buscar usuários')
     def get(self):
@@ -37,7 +40,7 @@ class UserListResource(Resource):
             return response.model_dump(), 500
 
     @api.expect(user_model)
-    @api.marshal_with(response_model, code=201, description="Usuário criado com sucesso")
+    @api.marshal_with(response_model, code=201, description="Usuário criado com sucesso", mask=False)
     @api.response(500, 'Erro ao criar usuário')
     def post(self):
         """Cria um novo usuário"""
@@ -54,10 +57,11 @@ class UserListResource(Resource):
             response = Response(message="Erro ao criar usuário", status_code=500, data=None)
             return response.model_dump(), 500
 
+
 @user_ns.route('/<int:user_id>')
 class UserResource(Resource):
     @api.doc('get_user')
-    @api.marshal_with(response_model, code=200, description="Usuário encontrado")
+    @api.marshal_with(response_model, code=200, description="Usuário encontrado", mask=False)
     @api.response(404, 'Usuário não encontrado')
     @api.response(500, 'Erro ao buscar usuário')
     def get(self, user_id):
@@ -75,7 +79,7 @@ class UserResource(Resource):
 
     @api.expect(user_model)
     @api.param('user_id', 'ID do usuário')
-    @api.marshal_with(response_model, code=200, description="Usuário atualizado com sucesso")
+    @api.marshal_with(response_model, code=200, description="Usuário atualizado com sucesso", mask=False)
     @api.response(404, 'Usuário não encontrado')
     @api.response(500, 'Erro ao atualizar usuário')
     def put(self, user_id):
