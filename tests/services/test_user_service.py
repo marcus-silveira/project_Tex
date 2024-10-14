@@ -1,5 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
+
+from app.Exceptions.invalid_exception_cpf import InvalidCPFError
 from app.services.user_service import UserService
 from app.models.user_model import User
 
@@ -62,7 +64,7 @@ class TestUserService(unittest.TestCase):
         # Arrange
         user_data = {
             'name': 'Marcus Silveira',
-            'cpf': '12345678901',
+            'cpf': '60022115005',
             'rg': 'MG1234567',
             'email': 'marcus@example.com',
             'address': '123 Main St',
@@ -80,9 +82,33 @@ class TestUserService(unittest.TestCase):
 
         # Assert
         self.assertIsNotNone(created_user)
-        self.assertEqual(created_user.name, 'Marcus Silveira')
-        self.assertEqual(created_user.id, 178)
+        self.assertEqual(created_user["name"], 'Marcus Silveira')
+        self.assertEqual(created_user["id"], 178)
         mock_user_repo.create.assert_called_once()
+
+    @patch('app.services.user_service.UserRepository')
+    def test_create_user_invalid_cpf(self, mock_user_repo):
+        # Arrange
+        user_data = {
+            'name': 'Marcus Silveira',
+            'cpf': '12345678900',  # CPF inválido
+            'rg': 'MG1234567',
+            'email': 'marcus@example.com',
+            'address': '123 Main St',
+            'state': 'MG',
+            'city': 'Belo Horizonte',
+            'birthday': '1990-01-01',
+            'cellphone': '31987654321',
+            'gender_id': 1,
+            'marital_status_id': 1
+        }
+
+        # Act & Assert
+        with self.assertRaises(InvalidCPFError) as context:
+            UserService.create_user(user_data)
+
+        # Verificar se a mensagem da exceção está correta
+        self.assertEqual(str(context.exception), "CPF inválido")
 
     @patch('app.services.user_service.UserRepository')
     def test_update_user_success(self, mock_user_repo):
@@ -99,10 +125,12 @@ class TestUserService(unittest.TestCase):
 
         # Act
         updated_user = UserService.update_user(321, updated_data)
+        print(updated_user.keys())
 
         # Assert
         self.assertIsNotNone(updated_user)
-        self.assertEqual(updated_user.name, 'Neymar Jr')
+        print(updated_user)
+        self.assertEqual(updated_user["name"], 'Neymar Jr')
         mock_user_repo.get_by_id.assert_called_once_with(321)
         mock_user_repo.update.assert_called_once()
 
