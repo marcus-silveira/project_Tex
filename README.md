@@ -49,7 +49,7 @@ A tabela de estado civil contém os diferentes status que um usuário pode ter. 
 
 Abaixo estão os principais endpoints disponíveis:
 
-- **GET /users**: Retorna todos os usuários.
+- **GET /users**: Retorna todos os usuários. lIMIT DEFAULT = 10
 - **GET /users/id**: Retorna um usuário específico pelo ID.
 - **POST /users**: Cria um novo usuário (os dados devem incluir `name`, `cpf`, `email`, etc.).
 - **PUT /users/id**: Atualiza as informações de um usuário específico.
