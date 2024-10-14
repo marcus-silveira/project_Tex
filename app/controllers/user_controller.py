@@ -1,7 +1,7 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request
 from flask_restx import Namespace, Resource, Api
 
-from app.Exceptions.invalid_exception_cpf import InvalidCPFError
+from app.exceptions.invalid_exception_cpf import InvalidCPFError
 from app.models.api_models import define_response_model, define_user_update_model, define_user_post_model, \
     define_user_get_model
 from app.services.user_service import UserService

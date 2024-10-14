@@ -1,4 +1,4 @@
-from app.Exceptions.invalid_exception_cpf import InvalidCPFError
+from app.exceptions.invalid_exception_cpf import InvalidCPFError
 
 
 class Utils:

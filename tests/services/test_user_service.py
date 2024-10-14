@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
 
-from app.Exceptions.invalid_exception_cpf import InvalidCPFError
+from app.exceptions.invalid_exception_cpf import InvalidCPFError
 from app.services.user_service import UserService
 from app.models.user_model import User
 
@@ -107,7 +107,6 @@ class TestUserService(unittest.TestCase):
         with self.assertRaises(InvalidCPFError) as context:
             UserService.create_user(user_data)
 
-        # Verificar se a mensagem da exceção está correta
         self.assertEqual(str(context.exception), "CPF inválido")
 
     @patch('app.services.user_service.UserRepository')
@@ -125,7 +124,6 @@ class TestUserService(unittest.TestCase):
 
         # Act
         updated_user = UserService.update_user(321, updated_data)
-        print(updated_user.keys())
 
         # Assert
         self.assertIsNotNone(updated_user)
