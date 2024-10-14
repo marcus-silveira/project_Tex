@@ -16,6 +16,7 @@ class UserRepository:
         try:
             db.session.add(user)
             db.session.commit()
+            db.session.refresh(user)
             return user
         except Exception as e:
             db.session.rollback()
@@ -25,6 +26,7 @@ class UserRepository:
     def update(user):
         try:
             db.session.commit()
+            db.session.refresh(user)
             return user
         except Exception as e:
             db.session.rollback()

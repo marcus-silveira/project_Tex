@@ -1,6 +1,7 @@
 from datetime import datetime
 from app.repositories.user_repository import UserRepository
 from app.entities.user import User
+from app.utils import Utils
 
 
 class UserService:
@@ -21,6 +22,7 @@ class UserService:
 
     @staticmethod
     def create_user(data):
+        Utils.validate_cpf(data['cpf'])
         if 'birthday' in data:
             data['birthday'] = datetime.strptime(data['birthday'], '%Y-%m-%d').date()
         
@@ -37,7 +39,10 @@ class UserService:
             gender_id=data['gender_id'],
             marital_status_id=data['marital_status_id']
         )
-        return UserRepository.create(new_user)
+        user = UserRepository.create(new_user)
+        user_data = {key: value for key, value in user.__dict__.items() if key != '_sa_instance_state'}
+
+        return user_data
 
     @staticmethod
     def update_user(user_id, data):
@@ -51,9 +56,10 @@ class UserService:
         if user:
             for key, value in data.items():
                 setattr(user, key, value)
-            UserRepository.update(user)
-            return True
-        return False
+            updated_user = UserRepository.update(user)
+            user_data = {key: value for key, value in updated_user.__dict__.items() if key != '_sa_instance_state'}
+            return user_data
+        return None
 
     @staticmethod
     def delete_user(user_id):

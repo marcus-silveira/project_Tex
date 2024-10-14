@@ -3,11 +3,11 @@ from datetime import date
 
 
 class Response(BaseModel):
-    data: list | None
+    data: list | None | dict
     message: str
     status_code: int
 
-    def model_dump(self):
+    def model_dump(self, **kwargs):
         def serialize_data(data):
             if isinstance(data, list):
                 return [serialize_data(item) for item in data]

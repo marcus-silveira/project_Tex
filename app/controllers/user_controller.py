@@ -1,9 +1,9 @@
 from flask import Blueprint, jsonify, request
 from flask_restx import Namespace, Resource, Api
 
+from app.Exceptions.invalid_exception_cpf import InvalidCPFError
 from app.models.api_models import define_response_model, define_user_update_model, define_user_post_model, \
     define_user_get_model
-from app.models.update_user_model import UserUpdate
 from app.services.user_service import UserService
 from app.models.response import Response
 from sqlalchemy.exc import IntegrityError
@@ -11,7 +11,7 @@ from sqlalchemy.exc import IntegrityError
 user_bp = Blueprint('user_bp', __name__, url_prefix='/api/v1')
 api = Api(user_bp, version='1.0', title='User API', description='API de usuários', doc='/swagger')
 
-user_ns = Namespace('users', description='Operações relacionadas a usuários')
+user_ns = Namespace('users', description='API de usuários - Teste Tex/Serasa')
 api.add_namespace(user_ns)
 
 
@@ -32,7 +32,7 @@ class UserListResource(Resource):
     def get(self):
         """Lista todos os usuários"""
         try:
-            limit = request.args.get('limit', type=int)
+            limit = request.args.get('limit', type=int) if request.args.get('limit') else 10
             users = UserService.get_all_users(limit)
             if not users:
                 response = Response(message="Não existem usuários cadastrados", status_code=404, data=None)
@@ -51,11 +51,13 @@ class UserListResource(Resource):
         try:
             data = request.get_json()
             user = UserService.create_user(data)
-            user_data = [{key: value for key, value in user.__dict__.items() if key != '_sa_instance_state'}]
-            response = Response(message="Usuário criado com sucesso", status_code=201, data=user_data)
+            response = Response(message="Usuário criado com sucesso", status_code=201, data=user)
             return response.model_dump(), 201
+        except InvalidCPFError:
+            response = Response(message="CPF Inválido", status_code=400, data=None)
+            return response.model_dump(), 500
         except IntegrityError:
-            response = Response(message="Usuário já cadastrado", status_code=500, data=None)
+            response = Response(message="Usuário já cadastrado", status_code=400, data=None)
             return response.model_dump(), 500
         except Exception as e:
             response = Response(message="Erro ao criar usuário", status_code=500, data=None)
@@ -92,7 +94,7 @@ class UserResource(Resource):
             data = request.get_json()
             updated_user = UserService.update_user(user_id, data)
             if updated_user:
-                response = Response(message="Usuário atualizado com sucesso", status_code=200, data=None)
+                response = Response(message="Usuário atualizado com sucesso", status_code=200, data=updated_user)
                 return response.model_dump(), 200
             response = Response(message="Usuário não encontrado", status_code=404, data=None)
             return response.model_dump(), 404
