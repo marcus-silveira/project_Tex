@@ -1,7 +1,9 @@
 from flask import Blueprint, jsonify, request
 from flask_restx import Namespace, Resource, Api
 
-from app.models.api_models import define_user_model, define_response_model
+from app.models.api_models import define_response_model, define_user_update_model, define_user_post_model, \
+    define_user_get_model
+from app.models.update_user_model import UserUpdate
 from app.services.user_service import UserService
 from app.models.response import Response
 from sqlalchemy.exc import IntegrityError
@@ -13,13 +15,15 @@ user_ns = Namespace('users', description='Operações relacionadas a usuários')
 api.add_namespace(user_ns)
 
 
-user_model = define_user_model(api)
-response_model = define_response_model(api)
+post_user_model = define_user_post_model(api)
+user_model = define_user_get_model(api)
+response_model = define_response_model(api, user_model)
+update_user_model = define_user_update_model(api)
 
 
 @user_ns.route("/")
 class UserListResource(Resource):
-    
+
     @api.doc('Retorna todos os usuários')
     @api.param('limit', 'Número de usuários a serem retornados')
     @api.marshal_with(response_model, code=200, description="Usuários encontrados", mask=False)
@@ -39,7 +43,7 @@ class UserListResource(Resource):
             response = Response(message="Erro ao buscar usuários", status_code=500, data=None)
             return response.model_dump(), 500
 
-    @api.expect(user_model)
+    @api.expect(post_user_model)
     @api.marshal_with(response_model, code=201, description="Usuário criado com sucesso", mask=False)
     @api.response(500, 'Erro ao criar usuário')
     def post(self):
@@ -53,7 +57,7 @@ class UserListResource(Resource):
         except IntegrityError:
             response = Response(message="Usuário já cadastrado", status_code=500, data=None)
             return response.model_dump(), 500
-        except Exception:
+        except Exception as e:
             response = Response(message="Erro ao criar usuário", status_code=500, data=None)
             return response.model_dump(), 500
 
@@ -73,13 +77,13 @@ class UserResource(Resource):
                 return response.model_dump(), 200
             response = Response(message="Usuário não encontrado", status_code=404, data=None)
             return response.model_dump(), 404
-        except Exception:
+        except Exception as e:
             response = Response(message="Erro ao buscar usuário", status_code=500, data=None)
             return response.model_dump(), 500
 
-    @api.expect(user_model)
+    @api.expect(update_user_model)
     @api.param('user_id', 'ID do usuário')
-    @api.marshal_with(response_model, code=200, description="Usuário atualizado com sucesso", mask=False)
+    @api.response(200, 'Usuário atualizado com sucesso')
     @api.response(404, 'Usuário não encontrado')
     @api.response(500, 'Erro ao atualizar usuário')
     def put(self, user_id):
@@ -88,12 +92,11 @@ class UserResource(Resource):
             data = request.get_json()
             updated_user = UserService.update_user(user_id, data)
             if updated_user:
-                updated_user_data = [{key: value for key, value in updated_user.__dict__.items() if key != '_sa_instance_state'}]
-                response = Response(message="Usuário atualizado com sucesso", status_code=200, data=updated_user_data)
+                response = Response(message="Usuário atualizado com sucesso", status_code=200, data=None)
                 return response.model_dump(), 200
             response = Response(message="Usuário não encontrado", status_code=404, data=None)
             return response.model_dump(), 404
-        except Exception:
+        except Exception as e:
             response = Response(message="Erro ao atualizar usuário", status_code=500, data=None)
             return response.model_dump(), 500
 

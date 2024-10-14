@@ -1,4 +1,4 @@
-from app.entities.user_model import User
+from app.entities.user import User
 from app import db
 
 

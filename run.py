@@ -1,3 +1,7 @@
+from app.entities.user import User
+from app.entities.marital_status import MaritalStatus
+from app.entities.gender import Gender
+
 from app import db, create_app
 from flask import redirect
 

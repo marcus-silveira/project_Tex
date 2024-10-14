@@ -1,6 +1,6 @@
 from datetime import datetime
 from app.repositories.user_repository import UserRepository
-from app.entities.user_model import User
+from app.entities.user import User
 
 
 class UserService:
@@ -14,7 +14,7 @@ class UserService:
 
     @staticmethod
     def get_user(user_id):
-        user =  UserRepository.get_by_id(user_id)
+        user = UserRepository.get_by_id(user_id)
         if user:
             return [{key: value for key, value in user.__dict__.items() if key != '_sa_instance_state'}]
         return None
@@ -42,14 +42,18 @@ class UserService:
     @staticmethod
     def update_user(user_id, data):
         if 'birthday' in data:
-            data['birthday'] = datetime.strptime(data['birthday'], '%Y-%m-%d').date()
+            try:
+                data['birthday'] = datetime.strptime(data['birthday'], '%Y-%m-%d').date()
+            except ValueError:
+                raise ValueError("Data de nascimento inválida. Formato esperado: YYYY-MM-DD.")
 
         user = UserRepository.get_by_id(user_id)
         if user:
             for key, value in data.items():
                 setattr(user, key, value)
-            return UserRepository.update(user)
-        return None
+            UserRepository.update(user)
+            return True
+        return False
 
     @staticmethod
     def delete_user(user_id):
